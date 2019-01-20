@@ -180,6 +180,8 @@ void MediaPuller::onMessageReceived(const sp<AMessage> &msg) {
                     // video encoder will release MediaBuffer when done
                     // with underlying data.
                     accessUnit->setMediaBufferBase(mbuf);
+                    mbuf->release();
+                    mbuf = NULL;
                 }
 
                 sp<AMessage> notify = mNotify->dup();
