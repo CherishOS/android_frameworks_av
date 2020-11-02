@@ -1069,8 +1069,11 @@ status_t WifiDisplaySource::PlaybackSession::addVideoSource(
 }
 
 status_t WifiDisplaySource::PlaybackSession::addAudioSource(bool usePCMAudio) {
+    audio_attributes_t attr = AUDIO_ATTRIBUTES_INITIALIZER;
+    attr.source = AUDIO_SOURCE_REMOTE_SUBMIX;
+
     sp<AudioSource> audioSource = new AudioSource(
-            AUDIO_SOURCE_REMOTE_SUBMIX,
+            &attr,
             mOpPackageName,
             48000 /* sampleRate */,
             2 /* channelCount */);
