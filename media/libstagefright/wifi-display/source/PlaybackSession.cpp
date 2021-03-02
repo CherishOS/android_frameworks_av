@@ -747,7 +747,7 @@ void WifiDisplaySource::PlaybackSession::onSinkFeedback(const sp<AMessage> &msg)
 
 status_t WifiDisplaySource::PlaybackSession::setupMediaPacketizer(
         bool enableAudio, bool enableVideo) {
-    mExtractor = new NuMediaExtractor;
+    mExtractor = new NuMediaExtractor(NuMediaExtractor::EntryPoint::OTHER);
 
     status_t err = mExtractor->setDataSource(
             NULL /* httpService */, mMediaPath.c_str());
