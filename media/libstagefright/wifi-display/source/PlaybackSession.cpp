@@ -38,7 +38,7 @@
 #include <media/stagefright/AudioSource.h>
 #include <media/stagefright/MediaDefs.h>
 #include <media/stagefright/MediaErrors.h>
-#include <media/MediaSource.h>
+#include <media/stagefright/MediaSource.h>
 #include <media/stagefright/MetaData.h>
 #include <media/stagefright/NuMediaExtractor.h>
 #include <media/stagefright/SurfaceMediaSource.h>
