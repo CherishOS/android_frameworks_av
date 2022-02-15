@@ -1547,6 +1547,16 @@ status_t convertMetaDataToMessage(
         msg->setBuffer("csd-2", buffer);
     }
 
+    if (meta->findData(kKeyVendorPrivate, &type, &data, &size)) {
+        sp<ABuffer> buffer = new (std::nothrow) ABuffer(size);
+        if (buffer.get() == NULL || buffer->base() == NULL) {
+            return NO_MEMORY;
+        }
+        memcpy(buffer->data(), data, size);
+
+        msg->setBuffer("vnpr", buffer);
+    }
+
     *format = msg;
 
     return OK;
@@ -2247,6 +2257,10 @@ status_t convertMessageToMetaData(const sp<AMessage> &msg, sp<MetaData> &meta) {
         }
     }
     // XXX TODO add whatever other keys there are
+    sp<ABuffer> vendorData;
+    if (msg->findBuffer("vnpr", &vendorData)) {
+        meta->setData(kKeyVendorPrivate, 0, vendorData->data(), vendorData->size());
+    }
 
 #if 0
     ALOGI("converted %s to:", msg->debugString(0).c_str());

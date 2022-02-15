@@ -278,6 +278,8 @@ enum {
     kKeyLastSampleIndexInChunk = 'lsic',  //int64_t, index of last sample in a chunk.
     kKeySampleTimeBeforeAppend = 'lsba', // int64_t, timestamp of last sample of a track.
 
+    kKeyVendorPrivate = 'vnpr', // raw data, vendor customization.
+
 };
 
 enum {
