@@ -118,6 +118,10 @@ cc_defaults {
 
 cc_library {
     name: "libcameraservice",
+    defaults: [
+        "uses_oplus_camera_defaults",
+        "uses_nothing_camera_defaults",
+    ],
 
     defaults: [
         "libcameraservice_deps",
