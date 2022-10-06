@@ -151,7 +151,9 @@ status_t AudioFlinger::DeviceEffectManager::createEffectHal(
     return status;
 }
 
-void AudioFlinger::DeviceEffectManager::dump(int fd) {
+void AudioFlinger::DeviceEffectManager::dump(int fd)
+NO_THREAD_SAFETY_ANALYSIS  // conditional try lock
+{
     const bool locked = dumpTryLock(mLock);
     if (!locked) {
         String8 result("DeviceEffectManager may be deadlocked\n");
@@ -255,7 +257,7 @@ bool AudioFlinger::DeviceEffectManager::CommandThread::threadLoop()
     return false;
 }
 
-void AudioFlinger::DeviceEffectManager::CommandThread::sendCommand(sp<Command> command) {
+void AudioFlinger::DeviceEffectManager::CommandThread::sendCommand(const sp<Command>& command) {
     Mutex::Autolock _l(mLock);
     mCommands.push_back(command);
     mWaitWorkCV.signal();
