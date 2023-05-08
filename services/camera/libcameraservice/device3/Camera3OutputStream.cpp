@@ -1502,8 +1502,7 @@ nsecs_t Camera3OutputStream::syncTimestampToDisplayLocked(nsecs_t t) {
                 vsyncTime.deadlineTimestamp >= currentTime &&
                 ((!cameraDisplayInSync && vsyncTime.expectedPresentationTime > minPresentT) ||
                  (cameraDisplayInSync && vsyncTime.expectedPresentationTime >
-                mLastPresentTime + minInterval +
-                    static_cast<nsecs_t>(biasForShortDelay * kTimelineThresholdNs)))) {
+                mLastPresentTime + minInterval + biasForShortDelay * kTimelineThresholdNs))) {
             expectedPresentT = vsyncTime.expectedPresentationTime;
             minDiff = std::abs(vsyncTime.expectedPresentationTime - idealPresentT);
         }
