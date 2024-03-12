@@ -29,7 +29,7 @@
 #define CLOGE(fmt, ...) ALOGE("Camera %s: %s: " fmt, mId.c_str(), __FUNCTION__, \
             ##__VA_ARGS__)
 
-#define CLOGW(fmt, ...) ALOGW("Camera %s: %s: " fmt, mId.string(), __FUNCTION__, \
+#define CLOGW(fmt, ...) ALOGW("Camera %s: %s: " fmt, mId.c_str(), __FUNCTION__, \
  ##__VA_ARGS__)
 
 // Convenience macros for transitioning to the error state
