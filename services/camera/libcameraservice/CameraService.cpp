@@ -39,6 +39,7 @@
 #include <android-base/macros.h>
 #include <android-base/parseint.h>
 #include <android-base/properties.h>
+#include <android-base/strings.h>
 #include <android/companion/virtualnative/IVirtualDeviceManagerNative.h>
 #include <binder/ActivityManager.h>
 #include <binder/AppOpsManager.h>
@@ -1899,6 +1900,14 @@ status_t CameraService::checkIfDeviceIsUsable(const std::string& cameraId) const
     return NO_ERROR;
 }
 
+bool isPrivilegedClient(const std::string &packageName) {
+    std::vector<std::string> privilegedClientList = android::base::Split(
+            android::base::GetProperty("persist.vendor.camera.privapp.list", ""), ",");
+    auto it = std::find(privilegedClientList.begin(), privilegedClientList.end(),
+            packageName);
+    return it != privilegedClientList.end();
+}
+
 void CameraService::finishConnectLocked(const sp<BasicClient>& client,
         const CameraService::DescriptorPtr& desc, int oomScoreOffset, bool systemNativeClient) {
 
@@ -1915,6 +1924,9 @@ void CameraService::finishConnectLocked(const sp<BasicClient>& client,
         evicted.clear();
     }
 
+    if (isPrivilegedClient(client->getPackageName())) {
+        evicted.clear();
+    }
 
     logConnected(desc->getKey(), static_cast<int>(desc->getOwnerId()),
             client->getPackageName());
@@ -2067,6 +2079,10 @@ status_t CameraService::handleEvictionsLocked(const std::string& cameraId, int c
 
         if (strcmp(packageNameStr, "com.android.camera") == 0
             || strcmp(packageNameStr, "com.google.android.GoogleCamera") == 0) {
+            evicted.clear();
+        }
+
+        if (isPrivilegedClient(packageName)) {
             evicted.clear();
         }
 
