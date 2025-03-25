@@ -4442,7 +4442,7 @@ status_t CameraService::BasicClient::notifyCameraOpening() {
             mSharedMode);
 
 #if defined (CAMERA_NEEDS_CLIENT_INFO_LIB) || defined (CAMERA_NEEDS_CLIENT_INFO_LIB_OPLUS)
-    gVendorCameraProviderService->setPackageName(mClientPackageName.c_str());
+    gVendorCameraProviderService->setPackageName(getPackageName().c_str());
 #endif
 
     return OK;
