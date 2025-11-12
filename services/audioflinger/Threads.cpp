@@ -50,7 +50,6 @@
 #include <binder/PersistableBundle.h>
 #include <com_android_media_audio.h>
 #include <com_android_media_audioserver.h>
-#include <set>
 #include <cutils/bitops.h>
 #include <cutils/properties.h>
 #include <fastpath/AutoPark.h>
@@ -2871,43 +2870,6 @@ sp<IAfTrack> PlaybackThread::createTrack_l(
 Exit:
     *status = lStatus;
     return track;
-}
-
-void PlaybackThread::listAppVolumes(std::set<media::AppVolume> &container)
-{
-    audio_utils::lock_guard _l(mutex());
-    for (sp<IAfTrack> track : mTracks) {
-        if (!track->getPackageName().empty()) {
-            media::AppVolume av;
-            av.packageName = track->getPackageName();
-            av.muted = track->isAppMuted();
-            av.volume = track->getAppVolume();
-            av.active = mActiveTracks.indexOf(track) >= 0;
-            container.insert(av);
-        }
-    }
-}
-
-status_t PlaybackThread::setAppVolume(const String8& packageName, const float value)
-{
-    audio_utils::lock_guard _l(mutex());
-    for (sp<IAfTrack> track : mTracks) {
-        if (packageName == track->getPackageName()) {
-            track->setAppVolume(value);
-        }
-    }
-    return NO_ERROR;
-}
-
-status_t PlaybackThread::setAppMute(const String8& packageName, const bool value)
-{
-    audio_utils::lock_guard _l(mutex());
-    for (sp<IAfTrack> track : mTracks) {
-        if (packageName == track->getPackageName()) {
-            track->setAppMute(value);
-        }
-    }
-    return NO_ERROR;
 }
 
 uint32_t PlaybackThread::correctLatency_l(uint32_t latency) const
@@ -5823,19 +5785,16 @@ PlaybackThread::mixer_state MixerThread::prepareTracks_l(
                 sp<AudioTrackServerProxy> proxy = track->audioTrackServerProxy();
                 float volume;
                 if (!audioserver_flags::portid_volume_management()) {
-                    if (track->isPlaybackRestricted() ||
-                            mStreamTypes[track->streamType()].mute || track->isAppMuted()) {
+                    if (track->isPlaybackRestricted() || mStreamTypes[track->streamType()].mute) {
                         volume = 0.f;
                     } else {
-                        volume = masterVolume * mStreamTypes[track->streamType()].volume
-                                              * track->getAppVolume();
+                        volume = masterVolume * mStreamTypes[track->streamType()].volume;
                     }
                 } else {
-                    if (track->isPlaybackRestricted() || track->getPortMute() || track->isAppMuted()) {
+                    if (track->isPlaybackRestricted() || track->getPortMute()) {
                         volume = 0.f;
                     } else {
-                        volume = masterVolume * track->getPortVolume()
-                                              * track->getAppVolume();
+                        volume = masterVolume * track->getPortVolume();
                     }
                 }
                 const auto amn = mAfThreadCallback->getAudioManagerNative();
@@ -6030,16 +5989,13 @@ PlaybackThread::mixer_state MixerThread::prepareTracks_l(
                     track->audioTrackServerProxy()->framesReleased()).first;
             float v;
             if (!audioserver_flags::portid_volume_management()) {
-                v = masterVolume * mStreamTypes[track->streamType()].volume
-                                 * track->getAppVolume();
-                if (mStreamTypes[track->streamType()].mute
-                        || track->isPlaybackRestricted() || track->isAppMuted()) {
+                v = masterVolume * mStreamTypes[track->streamType()].volume;
+                if (mStreamTypes[track->streamType()].mute || track->isPlaybackRestricted()) {
                     v = 0;
                 }
             } else {
-                v = masterVolume * track->getPortVolume()
-                                 * track->getAppVolume();
-                if (track->isPlaybackRestricted() || track->getPortMute() || track->isAppMuted()) {
+                v = masterVolume * track->getPortVolume();
+                if (track->isPlaybackRestricted() || track->getPortMute()) {
                     v = 0;
                 }
             }
@@ -6816,13 +6772,12 @@ void DirectOutputThread::processVolume_l(const sp<IAfTrack>& track, bool lastTra
 
     const auto amn = mAfThreadCallback->getAudioManagerNative();
     if (!audioserver_flags::portid_volume_management()) {
-        if (mMasterMute || mStreamTypes[track->streamType()].mute
-                || track->isPlaybackRestricted() || track->isAppMuted()) {
+        if (mMasterMute || mStreamTypes[track->streamType()].mute ||
+            track->isPlaybackRestricted()) {
             left = right = 0;
         } else {
             float typeVolume = mStreamTypes[track->streamType()].volume;
-            float appVolume = track->getAppVolume();
-            const float v = mMasterVolume * typeVolume * shaperVolume * appVolume;
+            const float v = mMasterVolume * typeVolume * shaperVolume;
 
             if (left > GAIN_FLOAT_UNITY) {
                 left = GAIN_FLOAT_UNITY;
@@ -6850,12 +6805,11 @@ void DirectOutputThread::processVolume_l(const sp<IAfTrack>& track, bool lastTra
                                    track->isPlaybackRestrictedControl()});
         }
     } else {
-        if (mMasterMute || track->isPlaybackRestricted() || track->isAppMuted()) {
+        if (mMasterMute || track->isPlaybackRestricted()) {
             left = right = 0;
         } else {
             float typeVolume = track->getPortVolume();
-            float appVolume = track->getAppVolume();
-            const float v = mMasterVolume * typeVolume * shaperVolume * appVolume;
+            const float v = mMasterVolume * typeVolume * shaperVolume;
 
             if (left > GAIN_FLOAT_UNITY) {
                 left = GAIN_FLOAT_UNITY;
