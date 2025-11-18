@@ -135,19 +135,12 @@ cc_library {
         "-Wextra",
         "-Werror",
         "-Wno-ignored-qualifiers",
-    ] + select(soong_config_variable("libcameraservice", "ext_lib"), {
-        any @ flag_val: ["-DTARGET_PROVIDES_CAMERA_PROVIDER_EXT_LIB"],
-        default: [],
-    }) + select(soong_config_variable("camera", "package_name"), {
+    ] + select(soong_config_variable("camera", "package_name"), {
         any @ flag_val: ["-DCAMERA_PACKAGE_NAME=\"" + flag_val + "\""],
         default: [],
     }) + select(soong_config_variable("camera", "uses_miui_camera"), {
         any @ flag_val: ["-DUSES_MIUI_CAMERA=\"" + flag_val + "\""],
         default: [],
-    }),
-    whole_static_libs: select(soong_config_variable("libcameraservice", "ext_lib"), {
-        any @ flag_val: [flag_val],
-        default: ["libcameraservice_ext_lib"],
     }),
     // Camera service source
 
@@ -159,7 +152,6 @@ cc_library {
         "common/CameraDeviceBase.cpp",
         "common/CameraOfflineSessionBase.cpp",
         "common/CameraProviderManager.cpp",
-        "common/CameraProviderExtension.cpp",
         "common/FrameProcessorBase.cpp",
         "common/hidl/HidlProviderInfo.cpp",
         "common/aidl/AidlProviderInfo.cpp",
@@ -315,12 +307,4 @@ cc_library_static {
         "-Werror",
         "-Wno-ignored-qualifiers",
     ],
-}
-
-cc_library_static {
-    name: "libcameraservice_ext_lib",
-    srcs: [
-        "common/CameraProviderExtension.cpp",
-    ],
-    export_include_dirs: ["."],
 }
